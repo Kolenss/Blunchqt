@@ -11,7 +11,7 @@ supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SECRET)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=["http://localhost:3000", "https://blunchqt.vercel.app/"],  
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -30,7 +30,7 @@ export default function Tracker({title, color1, color2}: Subject) {
 
   const handleCheckboxChange = async (topicId: number, field: 'is_read' | 'is_youtube' | 'is_drills', currentValue: boolean) => {
     try {
-      const response = await fetch('http://localhost:8000/update_topic', {
+      const response = await fetch('https://blunchqt-1.onrender.com/update_topic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export default function Tracker({title, color1, color2}: Subject) {
 
   const handleDateChange = async (topicId: number, field: 'date_started' | 'date_finished', value: string) => {
     try {
-      const response = await fetch('http://localhost:8000/update_topic', {
+      const response = await fetch('https://blunchqt-1.onrender.com/update_topic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function Tracker({title, color1, color2}: Subject) {
   useEffect(() => {
     async function fetchTopics() {
       try {
-        const response = await fetch(`http://localhost:8000/${title.toLowerCase().replace(' ', '_')}`);
+        const response = await fetch(`https://blunchqt-1.onrender.com/${title.toLowerCase().replace(' ', '_')}`);
         const data = await response.json();
         setTopics(data);
       } catch (error) {
