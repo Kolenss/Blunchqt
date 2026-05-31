@@ -1,13 +1,9 @@
 from supabase.client import Client, create_client
-from langchain_community.vectorstores import SupabaseVectorStore
-from langchain_openai import OpenAIEmbeddings
 from config import settings
 from dotenv import load_dotenv
-import sqlite3
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-import uuid
 
 app = FastAPI()
 
