@@ -48,7 +48,7 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
 
   const connectWebSocket = () => {
     try {
-      const ws = new WebSocket(`ws://blunchqt-1.onrender.com/ws/scores/${tableName}`);
+      const ws = new WebSocket(`wss://blunchqt-1.onrender.com/ws/scores/${tableName}`);
       
       ws.onopen = () => {
         console.log('WebSocket connected');
