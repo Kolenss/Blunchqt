@@ -1,50 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import ScoreTable from '@/components/scoretable';
+import Tracker from '@/components/table';
 
 type SubjectKey = 'abnormal' | 'developmental' | 'assessment' | 'industrial';
 
 interface SubjectConfig {
   name: string;
-  endpoint: string;
-  tableName: string;
-  color1?: string;
-  color2?: string;
+  color1: string;
+  color2: string;
 }
 
 const subjects: Record<SubjectKey, SubjectConfig> = {
   abnormal: {
     name: 'Abnormal Psychology',
-    endpoint: 'abnormal_psychology_score',
-    tableName: 'abnormal_psychology_score',
     color1: '#fbbc04',
     color2: '#fff2cc'
   },
   developmental: {
     name: 'Developmental Psychology',
-    endpoint: 'developmental_psychology_score',
-    tableName: 'developmental_psychology_score',
-    color1: '#b7d7a8',
-    color2: '#d9ead3'
+    color1: '#34a853',
+    color2: '#c8e6c9'
   },
   assessment: {
-    name: 'Psychological Assessment',
-    endpoint: 'psychological_assessment_score',
-    tableName: 'psychological_assessment_score',
-    color1: '#b4a7d6',
-    color2: '#d9d2e9'
+    name: 'Psychology Assessment',
+    color1: '#4285f4',
+    color2: '#c5e1f5'
   },
   industrial: {
     name: 'Industrial Psychology',
-    endpoint: 'industrial_organizational_psychology_score',
-    tableName: 'industrial_organizational_psychology_score',
-    color1: '#a4c2f4',
-    color2: '#cfe2f3'
+    color1: '#ea4335',
+    color2: '#f4c2c2'
   }
 };
 
-export default function ScoresPage() {
+export default function TrackerPage() {
   const [selectedSubject, setSelectedSubject] = useState<SubjectKey>('abnormal');
   const config = subjects[selectedSubject];
 
@@ -59,14 +49,16 @@ export default function ScoresPage() {
       }}
     >
       <div className="w-full">
-        <h1 className="font-kaushan text-4xl md:text-5xl lg:text-6xl text-black mb-6 md:mb-8 text-center">Summary Score Tracker</h1>
+        <h1 className="font-kaushan text-4xl md:text-5xl lg:text-6xl text-[#8A3D58] mb-6 md:mb-8 text-center">
+          Progress Tracker
+        </h1>
 
         {/* Subject Selector */}
         <div className="mb-6 flex justify-center">
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value as SubjectKey)}
-            className="bg-white px-6 py-3 text-lg border-2 border-[#8A3D58] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A3D58] bg-transparent text-[#8A3D58] font-semibold shadow-md"
+            className="px-6 py-3 text-lg border-2 bg-white border-[#8A3D58] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A3D58] bg-transparent text-[#8A3D58] font-semibold shadow-md"
           >
             {Object.entries(subjects).map(([key, subject]) => (
               <option key={key} value={key}>
@@ -77,16 +69,12 @@ export default function ScoresPage() {
         </div>
 
         {/* Pass key to force remount when subject changes */}
-        <div className="w-full rounded-lg overflow-hidden overflow-x-auto">
-          <ScoreTable 
-            key={selectedSubject}
-            title={config.name}
-            endpoint={config.endpoint}
-            tableName={config.tableName}
-            color1={config.color1}
-            color2={config.color2}
-          />
-        </div>
+        <Tracker 
+          key={selectedSubject} 
+          title={config.name}
+          color1={config.color1}
+          color2={config.color2}
+        />
       </div>
     </div>
   );

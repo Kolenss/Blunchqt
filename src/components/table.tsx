@@ -97,14 +97,13 @@ export default function Tracker({title, color1, color2}: Subject) {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-zinc-50 font-sans min-h-screen p-8  " style={{ backgroundImage: "url(/paperbg2.png)", backgroundSize: "cover", backgroundPosition: 'center', backgroundRepeat: "no-repeat"}}>
+    <div className="min-w-full flex flex-col items-center justify-center font-sans min-h-screen p-8" >
       <div className="w-full max-w-3/4">
-        <h1 className="font-kaushan text-5xl text-[#8A3D58] mb-8 text-center">Topic Tracker</h1>
         
         {loading ? (
           <p className="text-gray-600">Loading topics...</p>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
+          <div className="w-full rounded-lg shadow-md overflow-hidden overflow-x-auto">
             <table className="w-full border border-blac">
               <thead className="bg-[#8A3D58] text-white">
                 <tr style={{ backgroundColor: color1 || '#fbbc04' }}>
@@ -183,7 +182,7 @@ export default function Tracker({title, color1, color2}: Subject) {
 
         {/* Summary Section */}
         {!loading && topics.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+          <div className="mt-8 w-full rounded-lg shadow-md p-6 bg-zinc-50 ">
             <div className="flex items-center justify-between gap-8">
               {/* Summary Stats */}
               <div className="flex-1">
