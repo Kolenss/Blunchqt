@@ -72,7 +72,7 @@ export default function HierarchicalTable({
 
   const handleCommentChange = async (id: number, comment: string) => {
     try {
-      const response = await fetch('http://localhost:8000/update_topic_comment', {
+      const response = await fetch('https://blunchqt-1.onrender.com/update_topic_comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, comment })
