@@ -31,8 +31,26 @@ export default function Sidebar() {
         { name: 'Industrial Psychology', href: '/tracker/industrial' },
       ]
     },
-    { name: 'TOS Summary', href: '/tos' },
-    { name: 'Score Tracker', href: '/scores' },
+    { 
+      name: 'TOS Summary', 
+      href: '/tos',
+      subItems: [
+        { name: 'Abnormal Psychology', href: '/tos/abnormal' },
+        { name: 'Developmental Psychology', href: '/tos/developmental' },
+        { name: 'Psychological Assessment', href: '/tos/assessment' },
+        { name: 'Industrial Psychology', href: '/tos/industrial' },
+      ]
+    },
+    { 
+      name: 'Score Tracker', 
+      href: '/scores',
+      subItems: [
+        { name: 'Abnormal Psychology', href: '/scores/abnormal' },
+        { name: 'Developmental Psychology', href: '/scores/developmental' },
+        { name: 'Psychological Assessment', href: '/scores/assessment' },
+        { name: 'Industrial Psychology', href: '/scores/industrial' },
+      ]
+    },
     { name: 'DSM-5', href: '/dsm5' },
     { name: 'Learning Materials', href: '/materials' },
     { name: 'Study Strategy', href: '/strategies' },
