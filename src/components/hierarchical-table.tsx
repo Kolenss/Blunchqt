@@ -17,6 +17,8 @@ interface HierarchicalTableProps {
   weight?: string;
   totalItems?: string;
   duration?: string;
+  color1?: string;
+  color2?: string;
 }
 
 interface GroupedTopics {
@@ -29,7 +31,9 @@ export default function HierarchicalTable({
   subject, 
   weight = '20%', 
   totalItems = '100 items', 
-  duration = '3 Hours' 
+  duration = '3 Hours',
+  color1,
+  color2,
 }: HierarchicalTableProps) {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +42,7 @@ export default function HierarchicalTable({
   const fetchTopics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/topics?subject=${encodeURIComponent(subject)}`);
+      const response = await fetch(`https://blunchqt-1.onrender.com/topics?subject=${encodeURIComponent(subject)}`);
       if (!response.ok) throw new Error('Failed to fetch topics');
       const data = await response.json();
       setTopics(data);
@@ -55,7 +59,7 @@ export default function HierarchicalTable({
 
   const handleStatusChange = async (id: number, newStatus: 'undone' | 'inprogress' | 'done') => {
     try {
-      const response = await fetch('http://localhost:8000/update_topic_status', {
+      const response = await fetch('https://blunchqt-1.onrender.com/update_topic_status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus })
@@ -126,39 +130,39 @@ export default function HierarchicalTable({
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
-      <table className="w-full">
+      <table className="w-full border-collapse">
         <thead>
           {/* Title Row */}
-          <tr style={{ backgroundColor: '#fbbc04' }}>
-            <th colSpan={3} className="px-4 md:px-6 py-3 md:py-4 text-center font-bold text-gray-800 text-lg md:text-xl">
+          <tr style={{ backgroundColor: color1 }} className="border border-white">
+            <th colSpan={3} className="px-4 md:px-6 py-3 md:py-4 text-center font-bold text-gray-800 text-lg md:text-xl border border-white">
               {subject.toUpperCase()}
             </th>
           </tr>
           {/* Info Row */}
-          <tr style={{ backgroundColor: '#fff2cc' }}>
-            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base">
+          <tr style={{ backgroundColor: color2 }} className="border border-white">
+            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">
               Weight: {weight}
             </th>
-            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base">
+            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">
               {totalItems}
             </th>
-            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base">
+            <th className="px-4 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">
               {duration}
             </th>
           </tr>
           {/* Column Headers */}
-          <tr style={{ backgroundColor: '#fff2cc' }}>
-            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Topics</th>
-            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Progress</th>
-            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Notes</th>
+          <tr style={{ backgroundColor: color2 }} className="border border-white">
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">Topics</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">Progress</th>
+            <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base border border-white">Notes</th>
           </tr>
         </thead>
         <tbody>
           {Object.entries(groupedTopics).map(([mainTopic, subTopics]) => (
             <React.Fragment key={mainTopic}>
               {/* Main Topic Row */}
-              <tr style={{ backgroundColor: '#fbbc04' }}>
-                <td colSpan={3} className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-800 text-sm md:text-base">
+              <tr style={{ backgroundColor: color1 }} className="border border-white">
+                <td colSpan={3} className="px-4 md:px-6 py-3 md:py-4 font-bold text-gray-800 text-sm md:text-base border border-white">
                   {mainTopic}
                 </td>
               </tr>
@@ -168,8 +172,8 @@ export default function HierarchicalTable({
                 <React.Fragment key={`${mainTopic}-${subTopic}`}>
                   {/* Sub Topic Row */}
                   {subTopic !== 'General' && (
-                    <tr style={{ backgroundColor: '#fff2cc' }}>
-                      <td colSpan={3} className="px-4 md:px-6 py-2 md:py-3 font-semibold text-gray-700 text-sm md:text-base">
+                    <tr style={{ backgroundColor: color2 }} className="border border-white">
+                      <td colSpan={3} className="px-4 md:px-6 py-2 md:py-3 font-semibold text-gray-700 text-sm md:text-base border border-white">
                         {subTopic}
                       </td>
                     </tr>
@@ -179,12 +183,12 @@ export default function HierarchicalTable({
                   {topicList.map((topic, index) => (
                     <tr 
                       key={topic.id}
-                      className={`border-b ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors`}
+                      className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100 transition-colors border border-white`}
                     >
-                      <td className="px-4 md:px-6 py-2 md:py-3 text-gray-800 text-sm md:text-base">
+                      <td className="px-4 md:px-6 py-2 md:py-3 text-gray-800 text-sm md:text-base border border-white">
                         {topic.topic}
                       </td>
-                      <td className="px-4 md:px-6 py-2 md:py-3 text-center">
+                      <td className="px-4 md:px-6 py-2 md:py-3 text-center border border-white">
                         <select
                           value={topic.status}
                           onChange={(e) => handleStatusChange(topic.id, e.target.value as 'undone' | 'inprogress' | 'done')}
@@ -199,7 +203,7 @@ export default function HierarchicalTable({
                           <option value="done">Done</option>
                         </select>
                       </td>
-                      <td className="px-4 md:px-6 py-2 md:py-3">
+                      <td className="px-4 md:px-6 py-2 md:py-3 border border-white">
                         <input
                           type="text"
                           placeholder="Add notes..."
