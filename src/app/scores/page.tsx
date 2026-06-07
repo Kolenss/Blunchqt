@@ -11,6 +11,7 @@ interface SubjectConfig {
   tableName: string;
   color1?: string;
   color2?: string;
+  color3?: string;
 }
 
 const subjects: Record<SubjectKey, SubjectConfig> = {
@@ -18,29 +19,33 @@ const subjects: Record<SubjectKey, SubjectConfig> = {
     name: 'Abnormal Psychology',
     endpoint: 'abnormal_psychology_score',
     tableName: 'abnormal_psychology_score',
-    color1: '#fbbc04',
-    color2: '#fff2cc'
+    color1: '#a4c2f4',
+    color2: '#cfe2f3',
+    color3: '#e8f1fc'
   },
   developmental: {
     name: 'Developmental Psychology',
     endpoint: 'developmental_psychology_score',
     tableName: 'developmental_psychology_score',
-    color1: '#b7d7a8',
-    color2: '#d9ead3'
+    color1: '#FC6c85',
+    color2: '#fde4ea',
+    color3: '#fde4ea'
   },
   assessment: {
     name: 'Psychological Assessment',
     endpoint: 'psychological_assessment_score',
     tableName: 'psychological_assessment_score',
-    color1: '#b4a7d6',
-    color2: '#d9d2e9'
+    color1: '#b7d7a8',
+    color2: '#d9ead3',
+    color3: '#edf5e8'
   },
   industrial: {
     name: 'Industrial Psychology',
     endpoint: 'industrial_organizational_psychology_score',
     tableName: 'industrial_organizational_psychology_score',
-    color1: '#a4c2f4',
-    color2: '#cfe2f3'
+    color1: '#fbbc04',
+    color2: '#fff2cc',
+    color3: '#fff9e6'
   }
 };
 
@@ -85,6 +90,7 @@ export default function ScoresPage() {
             tableName={config.tableName}
             color1={config.color1}
             color2={config.color2}
+            color3={config.color3}
           />
         </div>
       </div>
