@@ -9,28 +9,33 @@ interface SubjectConfig {
   name: string;
   color1: string;
   color2: string;
+  color3: string;
 }
 
 const subjects: Record<SubjectKey, SubjectConfig> = {
   abnormal: {
     name: 'Abnormal Psychology',
-    color1: '#fbbc04',
-    color2: '#fff2cc'
+    color1: '#a4c2f4',
+    color2: '#cfe2f3',
+    color3: '#e8f1fc'
   },
   developmental: {
     name: 'Developmental Psychology',
-    color1: '#34a853',
-    color2: '#c8e6c9'
+    color1: '#FC6c85',
+    color2: '#FC8EAC',
+    color3: '#fde4ea'
   },
   assessment: {
     name: 'Psychology Assessment',
-    color1: '#4285f4',
-    color2: '#c5e1f5'
+    color1: '#b7d7a8',
+    color2: '#d9ead3',
+    color3: '#edf5e8'
   },
   industrial: {
     name: 'Industrial Psychology',
-    color1: '#ea4335',
-    color2: '#f4c2c2'
+    color1: '#fbbc04',
+    color2: '#fff2cc',
+    color3: '#fff9e6'
   }
 };
 
@@ -74,6 +79,7 @@ export default function TrackerPage() {
           title={config.name}
           color1={config.color1}
           color2={config.color2}
+          color3={config.color3}
         />
       </div>
     </div>

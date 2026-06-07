@@ -132,11 +132,17 @@ async def get_industrial_scores():
 @app.post("/update_topic")
 async def update_topic(topic: Message):
     try:
-        # Update the specific field for the topic
         supabase.table(topic.subject).update({
             topic.field: topic.value
         }).eq("id", topic.id).execute()
-        
+
+        await manager.broadcast({
+            "type": "update",
+            "id": topic.id,
+            "field": topic.field,
+            "value": topic.value
+        }, f"tracker_{topic.subject}")
+
         return {"message": "Topic updated successfully", "id": topic.id}
     except Exception as e:
         return {"error": str(e)}
@@ -144,7 +150,8 @@ async def update_topic(topic: Message):
 @app.get("/topics")
 async def get_topics_by_subject(subject: str):
     try:
-        response = supabase.table("topics").select("*").eq("subject", subject).execute()
+        response = supabase.table("topics").select("*").eq("subject", subject).order("main_topic").order("topic_number").execute()
+        print(response.data)
         return response.data
     except Exception as e:
         return {"error": str(e)}
@@ -155,7 +162,17 @@ async def update_topic_status(update: TopicStatusUpdate):
         supabase.table("topics").update({
             "status": update.status
         }).eq("id", update.id).execute()
-        
+
+        topic_row = supabase.table("topics").select("subject").eq("id", update.id).limit(1).execute()
+        if topic_row.data:
+            subject = topic_row.data[0]["subject"]
+            await manager.broadcast({
+                "type": "update",
+                "id": update.id,
+                "field": "status",
+                "value": update.status
+            }, f"topics_{subject}")
+
         return {"message": "Status updated successfully", "id": update.id}
     except Exception as e:
         return {"error": str(e)}
@@ -166,7 +183,17 @@ async def update_topic_comment(update: TopicCommentUpdate):
         supabase.table("topics").update({
             "comment": update.comment
         }).eq("id", update.id).execute()
-        
+
+        topic_row = supabase.table("topics").select("subject").eq("id", update.id).limit(1).execute()
+        if topic_row.data:
+            subject = topic_row.data[0]["subject"]
+            await manager.broadcast({
+                "type": "update",
+                "id": update.id,
+                "field": "comment",
+                "value": update.comment
+            }, f"topics_{subject}")
+
         return {"message": "Comment updated successfully", "id": update.id}
     except Exception as e:
         return {"error": str(e)}
@@ -263,7 +290,7 @@ async def websocket_topics(websocket: WebSocket, subject: str):
     await manager.connect(websocket, endpoint)
     try:
         # Send initial data
-        response = supabase.table("topics").select("*").eq("subject", subject).execute()
+        response = supabase.table("topics").select("*").eq("subject", subject).order("main_topic").order("topic_number").execute()
         await websocket.send_json({
             "type": "initial",
             "data": response.data
@@ -279,10 +306,80 @@ async def websocket_topics(websocket: WebSocket, subject: str):
         print(f"WebSocket error: {e}")
         manager.disconnect(websocket, endpoint)
 
+@app.websocket("/ws/tracker/{subject}")
+async def websocket_tracker(websocket: WebSocket, subject: str):
+    endpoint = f"tracker_{subject}"
+    await manager.connect(websocket, endpoint)
+    try:
+        response = supabase.table(subject).select("*").execute()
+        await websocket.send_json({
+            "type": "initial",
+            "data": response.data
+        })
+
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_json({"type": "pong"})
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, endpoint)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket, endpoint)
+
+@app.websocket("/ws/dsm5")
+async def websocket_dsm5(websocket: WebSocket):
+    endpoint = "dsm5"
+    await manager.connect(websocket, endpoint)
+    try:
+        response = supabase.table("dsm5_disorders").select("*").execute()
+        await websocket.send_json({
+            "type": "initial",
+            "data": response.data
+        })
+
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_json({"type": "pong"})
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, endpoint)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        manager.disconnect(websocket, endpoint)
+
+@app.get("/progress")
+async def get_progress():
+    try:
+        subjects = [
+            "ABNORMAL PSYCHOLOGY",
+            "DEVELOPMENTAL PSYCHOLOGY",
+            "INDUSTRIAL ORGANIZATIONAL PSYCHOLOGY",
+            "PSYCHOLOGICAL ASSESSMENT",
+        ]
+        result = {}
+        for subj in subjects:
+            rows = supabase.table("topics").select("status").eq("subject", subj).execute()
+            total = len(rows.data) if rows.data else 0
+            completed = sum(1 for r in rows.data if r["status"] == "done") if rows.data else 0
+            result[subj] = {"total": total, "completed": completed, "remaining": total - completed}
+        return result
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/dsm5_disorders")
 async def get_dsm5_disorders():
-    response = supabase.table("dsm5_disorders").select("*").execute()   
+    response = supabase.table("dsm5_disorders").select("*").execute()
     return response.data
+
+class CoinEarnRequest(BaseModel):
+    source_type: str
+    source_table: str
+    source_id: int
+    source_field: str
+    amount: int = 1
+
+class ShopPurchaseRequest(BaseModel):
+    item_id: str
+    price: int
 
 class DSM5Update(BaseModel):
     id: int
@@ -295,7 +392,79 @@ async def update_dsm5(update: DSM5Update):
         supabase.table("dsm5_disorders").update({
             update.field: update.value
         }).eq("id", update.id).execute()
-        
+
+        await manager.broadcast({
+            "type": "update",
+            "id": update.id,
+            "field": update.field,
+            "value": update.value
+        }, "dsm5")
+
         return {"message": "DSM-5 topic updated successfully", "id": update.id}
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/coins")
+async def get_coins():
+    try:
+        response = supabase.table("coin_transactions").select("amount").execute()
+        balance = sum(row["amount"] for row in response.data) if response.data else 0
+        return {"balance": balance}
+    except Exception as e:
+        return {"balance": 0}
+
+@app.post("/coins/earn")
+async def earn_coin(req: CoinEarnRequest):
+    try:
+        existing = supabase.table("coin_transactions").select("id").eq(
+            "source_type", req.source_type
+        ).eq(
+            "source_table", req.source_table
+        ).eq(
+            "source_id", req.source_id
+        ).eq(
+            "source_field", req.source_field
+        ).eq(
+            "kind", "earn"
+        ).execute()
+
+        if existing.data:
+            balance_resp = supabase.table("coin_transactions").select("amount").execute()
+            balance = sum(row["amount"] for row in balance_resp.data) if balance_resp.data else 0
+            return {"awarded": False, "balance": balance}
+
+        supabase.table("coin_transactions").insert({
+            "amount": req.amount,
+            "kind": "earn",
+            "source_type": req.source_type,
+            "source_table": req.source_table,
+            "source_id": req.source_id,
+            "source_field": req.source_field
+        }).execute()
+
+        balance_resp = supabase.table("coin_transactions").select("amount").execute()
+        balance = sum(row["amount"] for row in balance_resp.data) if balance_resp.data else 0
+        return {"awarded": True, "balance": balance}
+    except Exception as e:
+        return {"awarded": False, "balance": 0, "error": str(e)}
+
+@app.post("/shop/purchase")
+async def shop_purchase(req: ShopPurchaseRequest):
+    try:
+        balance_resp = supabase.table("coin_transactions").select("amount").execute()
+        balance = sum(row["amount"] for row in balance_resp.data) if balance_resp.data else 0
+
+        if balance < req.price:
+            return {"purchased": False, "error": "Not enough coins", "balance": balance}
+
+        supabase.table("coin_transactions").insert({
+            "amount": -req.price,
+            "kind": "spend",
+            "item_id": req.item_id,
+            "note": f"Purchased {req.item_id}"
+        }).execute()
+
+        new_balance = balance - req.price
+        return {"purchased": True, "balance": new_balance}
+    except Exception as e:
+        return {"purchased": False, "error": str(e), "balance": 0}

@@ -13,6 +13,7 @@ interface SubjectConfig {
   duration: string;
   color1: string;
   color2: string;
+  color3: string;
 }
 
 const subjects: Record<SubjectKey, SubjectConfig> = {
@@ -22,8 +23,9 @@ const subjects: Record<SubjectKey, SubjectConfig> = {
     weight: '20%',
     totalItems: '100 items',
     duration: '3 Hours',
-    color1: '#fbbc04',
-    color2: '#fff2cc'
+    color1: '#a4c2f4',
+    color2: '#cfe2f3',
+    color3: '#e8f1fc'
   },
   developmental: {
     name: 'Developmental Psychology',
@@ -31,26 +33,29 @@ const subjects: Record<SubjectKey, SubjectConfig> = {
     weight: '20%',
     totalItems: '100 items',
     duration: '3 Hours',
-    color1: '#34a853',
-    color2: '#c8e6c9'
+    color1: '#FC6c85',
+    color2: '#FC8EAC',
+    color3: '#fde4ea'
   },
   assessment: {
     name: 'Psychology Assessment',
-    subject: 'PSYCHOLOGY ASSESSMENT',
+    subject: 'PSYCHOLOGICAL ASSESSMENT',
     weight: '20%',
     totalItems: '100 items',
     duration: '3 Hours',
-    color1: '#4285f4',
-    color2: '#c5e1f5'
+    color1: '#b7d7a8',
+    color2: '#d9ead3',
+    color3: '#edf5e8'
   },
   industrial: {
     name: 'Industrial Psychology',
-    subject: 'INDUSTRIAL PSYCHOLOGY',
+    subject: 'INDUSTRIAL ORGANIZATIONAL PSYCHOLOGY',
     weight: '20%',
     totalItems: '100 items',
     duration: '3 Hours',
-    color1: '#ea4335',
-    color2: '#f4c2c2'
+    color1: '#fbbc04',
+    color2: '#fff2cc',
+    color3: '#fff9e6'
   }
 };
 
@@ -95,6 +100,7 @@ export default function TOSPage() {
           duration={config.duration}
           color1={config.color1}
           color2={config.color2}
+          color3={config.color3}
         />
       </div>
     </div>

@@ -36,3 +36,177 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* ── Animations ─────────────────────────────────── */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(138, 61, 88, 0.25); }
+  50%      { box-shadow: 0 4px 30px rgba(138, 61, 88, 0.5); }
+}
+
+@keyframes donut-draw {
+  from { stroke-dashoffset: 753.98; }
+}
+
+@keyframes count-fade {
+  0%   { opacity: 0; transform: scale(0.8); }
+  50%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1deg); }
+  50%      { transform: rotate(1deg); }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.7s ease-out both;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+.animate-donut-draw {
+  animation: donut-draw 1.5s ease-out both;
+}
+
+.animate-count-fade {
+  animation: count-fade 0.6s ease-out both;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.8s ease-out both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.8s ease-out both;
+}
+
+.animate-wiggle {
+  animation: wiggle 3s ease-in-out infinite;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+
+/* ── Scrapbook patterns ────────────────────────── */
+
+.bg-pink-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    #fce4ec 0px,
+    #fce4ec 20px,
+    #fff0f3 20px,
+    #fff0f3 40px
+  );
+}
+
+.bg-green-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    #e8f5e9 0px,
+    #e8f5e9 20px,
+    #f1f8e9 20px,
+    #f1f8e9 40px
+  );
+}
+
+.bg-pink-green-stripes {
+  background: repeating-linear-gradient(
+    90deg,
+    #fce4ec 0px,
+    #fce4ec 24px,
+    #f8bbd0 24px,
+    #f8bbd0 48px
+  );
+}
+
+.stamp-border {
+  border: 3px dashed #c2185b;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.scallop-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(138, 61, 88, 0.12), 0 1px 4px rgba(0,0,0,0.06);
+  border: 2px solid #f8bbd0;
+}
+
+.polaroid-card {
+  background: white;
+  border-radius: 4px;
+  padding: 8px 8px 24px 8px;
+  box-shadow: 2px 3px 12px rgba(0,0,0,0.12);
+  border: 1px solid #e0e0e0;
+}
+
+.ribbon-label {
+  background: linear-gradient(135deg, #e91e63, #c2185b);
+  color: white;
+  padding: 6px 24px;
+  font-weight: 700;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.ribbon-label::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-right: 8px solid #e91e63;
+}

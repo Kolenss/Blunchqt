@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-
-interface Score {
-  id: number;
-  drill: string;
-  drill_date: string | null;
-  score: number;
-  mistakes: number;
-  total: number;
-  average: number;
-}
+import { useState, useCallback } from 'react';
+import {
+  type Score,
+  fetchScores as fetchScoresAPI,
+  updateScore as updateScoreAPI,
+  addScore as addScoreAPI,
+} from '@/lib/api';
+import { earnCoin } from '@/lib/coins';
+import { useWS } from '@/lib/use-ws';
 
 interface ScoreTableProps {
   title: string;
@@ -18,11 +16,10 @@ interface ScoreTableProps {
   tableName: string;
   color1?: string;
   color2?: string;
+  color3?: string;
 }
 
-export default function ScoreTable({ title, endpoint, tableName, color1, color2 }: ScoreTableProps) {
-  const [scores, setScores] = useState<Score[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ScoreTable({ title, endpoint, tableName, color1, color2, color3 }: ScoreTableProps) {
   const [newRow, setNewRow] = useState({
     drill: '',
     drill_date: '',
@@ -30,141 +27,31 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
     mistakes: '',
     total: ''
   });
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    connectWebSocket();
-    
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-    };
-  }, [tableName]);
+  const fallbackFetch = useCallback(
+    () => fetchScoresAPI(endpoint),
+    [endpoint],
+  );
 
-  const connectWebSocket = () => {
-    try {
-      const ws = new WebSocket(`wss://blunchqt-1.onrender.com/ws/scores/${tableName}`);
-      
-      ws.onopen = () => {
-        console.log('WebSocket connected');
-        setLoading(false);
-      };
-      
-      ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        
-        switch (message.type) {
-          case 'initial':
-            setScores(Array.isArray(message.data) ? message.data : []);
-            setLoading(false);
-            break;
-          case 'insert':
-            if (message.data && Array.isArray(message.data)) {
-              setScores(prev => [...prev, ...message.data]);
-            }
-            break;
-          case 'update':
-            setScores(prev => prev.map(score => 
-              score.id === message.id 
-                ? { ...score, [message.field]: message.value }
-                : score
-            ));
-            break;
-        }
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setLoading(false);
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket disconnected, reconnecting...');
-        // Reconnect after 3 seconds
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWebSocket();
-        }, 3000);
-      };
-      
-      wsRef.current = ws;
-    } catch (error) {
-      console.error('Error connecting WebSocket:', error);
-      // Fallback to HTTP if WebSocket fails
-      fetchScores();
-    }
-  };
-
-  async function fetchScores() {
-    setLoading(true);
-    try {
-      const response = await fetch(`https://blunchqt-1.onrender.com/${endpoint}`);
-      const data = await response.json();
-      setScores(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error fetching scores:', error);
-      setScores([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Keep the HTTP fallback for compatibility
-  useEffect(() => {
-    // Only fetch via HTTP if WebSocket is not connected
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      const timer = setTimeout(() => {
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-          fetchScores();
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [endpoint]);
+  const { data: scores, setData: setScores, loading } = useWS<Score>({
+    path: `/ws/scores/${tableName}`,
+    fallbackFetch,
+  });
 
   const handleFieldChange = async (id: number, field: string, value: string | number) => {
     try {
-      const response = await fetch('https://blunchqt-1.onrender.com/update_score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id, 
-          table: tableName,
-          field, 
-          value 
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server error:', errorData);
-        throw new Error('Failed to update score');
-      }
-      
-      // Update local state
-      setScores(scores.map(s => {
+      const { ok } = await updateScoreAPI({ id, table: tableName, field, value });
+
+      if (!ok) throw new Error('Failed to update score');
+
+      setScores(prev => prev.map(s => {
         if (s.id === id) {
           const updatedScore = { ...s, [field]: field === 'date' ? value : Number(value) };
-          
-          // Recalculate average if numeric fields changed
+
           if (field === 'score' || field === 'mistakes' || field === 'total') {
-            
-            // Update average in database
-            fetch('https://blunchqt-1.onrender.com/update_score', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                id, 
-                table: tableName,
-                field: 'average', 
-              })
-            });
+            updateScoreAPI({ id, table: tableName, field: 'average', value: '' });
           }
-          
+
           return updatedScore;
         }
         return s;
@@ -176,61 +63,56 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
   };
 
   const handleAddRow = async () => {
-   
-
     try {
       const score = Number(newRow.score);
       const mistakes = Number(newRow.mistakes);
       const total = Number(newRow.total);
 
-      console.log('Sending data:', {
+      const { ok, data } = await addScoreAPI({
         table: tableName,
         drill: newRow.drill,
         drill_date: newRow.drill_date || null,
         score,
         mistakes,
-        total
+        total,
       });
 
-      const response = await fetch('https://blunchqt-1.onrender.com/add_score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          table: tableName,
-          drill: newRow.drill,
-          drill_date: newRow.drill_date || null,
-          score,
-          mistakes,
-          total
-        })
-      });
-
-      const responseData = await response.json();
-      console.log('Server response:', responseData);
-
-      if (!response.ok || responseData.error) {
-        console.error('Server error:', responseData);
-        throw new Error(responseData.error || 'Failed to add score');
+      if (!ok || (data as { error?: string }).error) {
+        throw new Error((data as { error?: string }).error || 'Failed to add score');
       }
 
-      // Reset form - WebSocket will handle adding to the list
+      // Award coins based on average: 5 points * (score/total)
+      if (total > 0 && data) {
+        const average = score / total;
+        const points = Math.round(5 * average);
+        if (points > 0) {
+          const inserted = Array.isArray(data) ? data : (data as { data?: Score[] }).data;
+          const newId = inserted && Array.isArray(inserted) && inserted.length > 0 ? inserted[0].id : 0;
+          earnCoin({
+            source_type: 'score_add',
+            source_table: tableName,
+            source_id: newId,
+            source_field: 'score',
+            amount: points,
+          });
+        }
+      }
+
       setNewRow({ drill: '', drill_date: '', score: '', mistakes: '', total: '' });
-      
     } catch (err) {
       console.error('Error adding score:', err);
     }
   };
 
   return (
-    <div 
-      className="flex flex-col items-center font-sans min-h-screen md:p-8 overflow-x-hidden">
+    <div className="flex flex-col items-center font-sans min-h-screen p-2 md:p-8 overflow-x-hidden">
       <div className="w-full max-w-6xl">
 
-        {loading ? (
+        {loading && scores.length === 0 ? (
           <p className="text-white text-center text-xl">Loading scores...</p>
         ) : (
           <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[520px]">
               <thead>
                 <tr style={{ backgroundColor: color1 || '#fbbc04' }}>
                   <th colSpan={6} className="px-4 md:px-6 py-3 md:py-4 text-center font-bold text-gray-800 text-lg md:text-xl">
@@ -250,9 +132,8 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
                 {scores.map((score, index) => (
                   <tr
                     key={score.id}
-                    className={`border-b ${
-                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                    } hover:bg-gray-100 transition-colors`}
+                    className="border-b hover:brightness-95 transition-colors"
+                    style={{ backgroundColor: index % 2 === 0 ? (color3 || '#f9fafb') : 'white' }}
                   >
                     <td className="px-4 md:px-6 py-3 md:py-4 text-gray-800 text-sm md:text-base">{score.drill}</td>
                     <td className="px-4 md:px-6 py-3 md:py-4 text-center text-gray-600 text-sm md:text-base">
@@ -292,7 +173,7 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
                     </td>
                   </tr>
                 ))}
-                
+
                 {/* New Row for Adding Data */}
                 <tr className=" border-t-2">
                   <td className="px-4 md:px-6 py-3 md:py-4">
@@ -350,7 +231,7 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2 
                 </tr>
               </tbody>
             </table>
-            
+
             {scores.length === 0 && (
               <p className="text-center py-8 text-gray-500">No scores found</p>
             )}
