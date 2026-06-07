@@ -15,6 +15,8 @@ export default function Countdown() {
     const [activeCategory, setActiveCategory] = useState<ShopCategory>('snacks')
     const [purchaseMsg, setPurchaseMsg] = useState<{ text: string; ok: boolean } | null>(null)
     const [purchasing, setPurchasing] = useState(false)
+    const [confirmItem, setConfirmItem] = useState<{ id: string; name: string; price: number } | null>(null)
+    const [confirmQty, setConfirmQty] = useState(1)
 
     const [timeLeft, setTimeLeft] = useState({
         days: 0,
@@ -60,15 +62,24 @@ export default function Countdown() {
         return () => clearInterval(noteInterval)
     }, [])
 
-    const handlePurchase = async (itemId: string, price: number) => {
+    const openConfirm = (itemId: string, name: string, price: number) => {
+        setConfirmItem({ id: itemId, name, price })
+        setConfirmQty(1)
+    }
+
+    const handlePurchase = async () => {
+        if (!confirmItem) return
+        const { id: itemId, name: itemName, price } = confirmItem
+        const totalPrice = price * confirmQty
+
         setPurchasing(true)
         setPurchaseMsg(null)
-        const result = await purchaseShopItem({ item_id: itemId, price })
+        setConfirmItem(null)
+
+        const result = await purchaseShopItem({ item_id: itemId, price: totalPrice })
         if (result.purchased) {
             setCoinBalance(result.balance)
-            const item = shopItems.find(i => i.id === itemId)
-            const itemName = item?.name ?? itemId
-            setPurchaseMsg({ text: `Successfully purchased ${itemName} for ${price} coins.`, ok: true })
+            setPurchaseMsg({ text: `Successfully purchased ${confirmQty}x ${itemName} for ${totalPrice} coins.`, ok: true })
 
             // Send purchase notification email (don't block UI)
             try {
@@ -76,9 +87,9 @@ export default function Countdown() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        itemName,
+                        itemName: `${itemName} x${confirmQty}`,
                         itemId,
-                        price,
+                        price: totalPrice,
                         balance: result.balance,
                     }),
                 })
@@ -228,7 +239,7 @@ export default function Countdown() {
                                             </span>
                                             <button
                                                 disabled={!canAfford || purchasing}
-                                                onClick={() => handlePurchase(item.id, item.price)}
+                                                onClick={() => openConfirm(item.id, item.name, item.price)}
                                                 className={`w-full text-xs md:text-sm font-semibold py-1.5 rounded-lg transition-all ${
                                                     canAfford
                                                         ? 'bg-[#8A3D58] text-white hover:bg-[#6d2f45] active:scale-95'
@@ -250,6 +261,66 @@ export default function Countdown() {
                                 className="w-full py-2 text-sm font-semibold text-[#8A3D58] border border-[#8A3D58] rounded-lg hover:bg-[#f9e8ef] transition-colors"
                             >
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Purchase Confirmation Modal */}
+            {confirmItem && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={() => setConfirmItem(null)}>
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" />
+                    <div
+                        className="animate-scale-in relative bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 flex flex-col items-center gap-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h4 className="font-kaushan text-xl md:text-2xl text-[#8A3D58]">Confirm Purchase</h4>
+
+                        <p className="text-gray-700 text-sm md:text-base text-center">
+                            Buy <span className="font-bold">{confirmItem.name}</span>?
+                        </p>
+
+                        {/* Quantity selector */}
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setConfirmQty(q => Math.max(1, q - 1))}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f9e8ef] text-[#8A3D58] font-bold text-lg hover:bg-[#f0d0e0] transition-colors"
+                            >
+                                -
+                            </button>
+                            <span className="text-lg font-bold text-gray-800 w-8 text-center">{confirmQty}</span>
+                            <button
+                                onClick={() => setConfirmQty(q => {
+                                    const maxQty = Math.floor(coinBalance / confirmItem.price)
+                                    return Math.min(q + 1, Math.max(1, maxQty))
+                                })}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f9e8ef] text-[#8A3D58] font-bold text-lg hover:bg-[#f0d0e0] transition-colors"
+                            >
+                                +
+                            </button>
+                        </div>
+
+                        {/* Total cost */}
+                        <div className="flex items-center gap-2 bg-[#f9e8ef] rounded-full px-4 py-2">
+                            <Image src="/coin.png" alt="Coin" width={18} height={18} className="w-4.5 h-4.5" />
+                            <span className="font-semibold text-[#8A3D58] text-sm">{confirmItem.price * confirmQty} coins</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setConfirmItem(null)}
+                                className="flex-1 py-2 text-sm font-semibold text-[#8A3D58] border border-[#8A3D58] rounded-lg hover:bg-[#f9e8ef] transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handlePurchase}
+                                disabled={purchasing}
+                                className="flex-1 py-2 text-sm font-semibold bg-[#8A3D58] text-white rounded-lg hover:bg-[#6d2f45] active:scale-95 transition-all disabled:opacity-50"
+                            >
+                                {purchasing ? 'Buying...' : 'Confirm'}
                             </button>
                         </div>
                     </div>
