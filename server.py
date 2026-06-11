@@ -8,6 +8,7 @@ import json
 from typing import Dict, Set
 import asyncio
 from fastapi import websockets
+from nextauth import Auth, GoogleProvider
 
 app = FastAPI()
 

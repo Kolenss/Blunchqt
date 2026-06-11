@@ -17,16 +17,14 @@ interface MenuItem {
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const menuItems: MenuItem[] = [
     { name: 'Summary', href: '/', active: true },
     { name: 'Tracker', href: '/tracker' },
     { name: 'TOS Summary', href: '/tos' },
     { name: 'Score Tracker', href: '/scores' },
+    { name: 'Calendar', href: '/calendar' },
     { name: 'DSM-5', href: '/dsm5' },
-    { name: 'Learning Materials', href: '/materials' },
-    { name: 'Study Strategy', href: '/strategies' },
     { name: 'PRC Requirements', href: '/prc' },
   ];
 
