@@ -1,6 +1,5 @@
 import Progress from "@/components/progress";
 import Countdown from "@/components/countdown";
-import TodayCalendar from "@/components/today-calendar";
 
 export default function Home() {
   return (
@@ -14,7 +13,6 @@ export default function Home() {
 
         <Progress/>
         <Countdown />
-        <TodayCalendar compact />
 
       </main>
     </div>

@@ -45,6 +45,11 @@ export function useWS<T extends { id: number }>({
             setData((prev) => [...prev, ...(msg.data as T[])]);
           }
           break;
+        case 'delete':
+          if (msg.id != null) {
+            setData((prev) => prev.filter((item) => item.id !== msg.id));
+          }
+          break;
       }
     },
     [onUpdate],

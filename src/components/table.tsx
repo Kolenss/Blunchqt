@@ -173,19 +173,19 @@ export default function Tracker({title, color1, color2, color3}: Subject) {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="font-semibold text-black text-sm md:text-base">Number of Chapters:</span>
-                    <span className='text-black text-sm md:text-base'>{totalTopics}</span>
+                    <span className="text-black text-sm md:text-base">{totalTopics}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-semibold text-black text-sm md:text-base">Completed Topics:</span>
-                    <span className='text-black text-sm md:text-base'>{completedTopics}</span>
+                    <span className="text-black text-sm md:text-base">{completedTopics}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-semibold text-black text-sm md:text-base">Completed:</span>
-                    <span className='text-black text-sm md:text-base'>{completedPercentage.toFixed(2)}%</span>
+                    <span className="text-black text-sm md:text-base">{completedPercentage.toFixed(2)}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-semibold text-black text-sm md:text-base">Remaining:</span>
-                    <span className='text-black text-sm md:text-base'>{remainingPercentage.toFixed(2)}%</span>
+                    <span className="text-black text-sm md:text-base">{remainingPercentage.toFixed(2)}%</span>
                   </div>
                 </div>
               </div>

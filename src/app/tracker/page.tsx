@@ -47,9 +47,9 @@ export default function TrackerPage() {
     <div 
       className="flex flex-col items-center bg-zinc-50 font-sans min-h-screen p-4 md:p-8"
       style={{ 
-        backgroundImage: "url(/smbg2.png)", 
-        backgroundSize: "contain", 
-        backgroundPosition: 'center', 
+        backgroundImage: "url(/smbg2.png)",
+        backgroundSize: "contain",
+        backgroundPosition: 'center',
         backgroundRepeat: "repeat"
       }}
     >
@@ -63,7 +63,7 @@ export default function TrackerPage() {
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value as SubjectKey)}
-            className="px-6 py-3 text-lg border-2 bg-white border-[#8A3D58] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A3D58] bg-transparent text-[#8A3D58] font-semibold shadow-md"
+            className="px-6 py-3 text-lg border-2 bg-white border-[#8A3D58] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-[#8A3D58] font-semibold shadow-md"
           >
             {Object.entries(subjects).map(([key, subject]) => (
               <option key={key} value={key}>

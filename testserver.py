@@ -8,7 +8,7 @@ import json
 from typing import Dict, Set
 import asyncio
 from fastapi import websockets
-
+ 
 app = FastAPI()
 
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SECRET)
