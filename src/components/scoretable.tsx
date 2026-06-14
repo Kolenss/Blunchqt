@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import { earnCoin } from '@/lib/coins';
 import { useWS } from '@/lib/use-ws';
+import TableSkeleton from '@/components/table-skeleton';
 
 interface ScoreTableProps {
   title: string;
@@ -123,7 +124,13 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2,
       <div className="w-full max-w-6xl">
 
         {loading && scores.length === 0 ? (
-          <p className="text-white text-center text-xl">Loading scores...</p>
+          <TableSkeleton
+            title={title}
+            headers={['Drills', 'Date', 'Score', 'Mistakes', 'Total', 'Average', '']}
+            color1={color1}
+            color2={color2}
+            color3={color3}
+          />
         ) : (
           <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
             <table className="w-full min-w-[520px]">
