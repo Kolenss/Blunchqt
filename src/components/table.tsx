@@ -8,6 +8,7 @@ import {
   updateTrackerTopic,
 } from '@/lib/api';
 import { useWS } from '@/lib/use-ws';
+import TableSkeleton from '@/components/table-skeleton';
 
 interface Subject {
     title: string;
@@ -86,7 +87,14 @@ export default function Tracker({title, color1, color2, color3}: Subject) {
       <div className="w-full max-w-5xl">
 
         {loading && topics.length === 0 ? (
-          <p className="text-gray-600">Loading topics...</p>
+          <TableSkeleton
+            title={title}
+            headers={['Topic', 'Read', 'YouTube', 'Drills', 'Date Started', 'Date Finished']}
+            color1={color1}
+            color2={color2}
+            color3={color3}
+            showSummary
+          />
         ) : (
           <div className="w-full rounded-lg shadow-md overflow-hidden overflow-x-auto">
             <table className="w-full border border-black">

@@ -9,6 +9,7 @@ import {
   updateTOSComment,
 } from '@/lib/api';
 import { useWS } from '@/lib/use-ws';
+import TableSkeleton from '@/components/table-skeleton';
 
 function formatTopicLabel(topic: TOSTopic) {
   const topicText = topic.topic.trim();
@@ -114,9 +115,14 @@ export default function HierarchicalTable({
 
   if (loading && topics.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <p className="text-gray-600">Loading topics...</p>
-      </div>
+      <TableSkeleton
+        title={subject.toUpperCase()}
+        headers={['Main Topic', 'Status', 'Comments']}
+        rows={10}
+        color1={color1}
+        color2={color2}
+        color3={color3}
+      />
     );
   }
 

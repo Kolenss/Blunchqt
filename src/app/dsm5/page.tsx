@@ -8,6 +8,7 @@ import {
   updateDSM5,
 } from '@/lib/api';
 import { useWS } from '@/lib/use-ws';
+import TableSkeleton from '@/components/table-skeleton';
 
 export default function DSM5Page() {
   const fallbackFetch = useCallback(() => fetchDSM5Topics(), []);
@@ -74,7 +75,14 @@ export default function DSM5Page() {
       <div className="w-full max-w-5xl">
 
         {loading && topics.length === 0 ? (
-          <p className="text-gray-600">Loading topics...</p>
+          <TableSkeleton
+            title="DSM-5 DISORDERS"
+            headers={['Sub Topic', 'Topic', 'Status']}
+            rows={10}
+            color1="#ea9999"
+            color2="#f4cccc"
+            showSummary
+          />
         ) : (
           <div className="w-full rounded-lg shadow-md overflow-hidden overflow-x-auto">
             <table className="w-full border border-black">
