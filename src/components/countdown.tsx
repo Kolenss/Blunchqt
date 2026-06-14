@@ -57,7 +57,7 @@ export default function Countdown() {
     useEffect(() => {
         const noteInterval = setInterval(() => {
             setCurrentNote((prev) => (prev + 1) % motivationalData.notes.length)
-        }, 2000)
+        }, 6000)
 
         return () => clearInterval(noteInterval)
     }, [])
@@ -120,7 +120,7 @@ export default function Countdown() {
                         backgroundRepeat: 'no-repeat'
                     }}
                 >
-                    <p className="font-kaushan text-2xl md:text-4xl lg:text-5xl text-[#8A3D58] text-center px-4 md:px-6 lg:px-8 animate-fade-in" key={currentNote}>
+                    <p className="text-xl md:text-2xl lg:text-3xl font-medium text-[#8A3D58] text-center px-4 md:px-6 lg:px-8 animate-fade-in italic" key={currentNote}>
                         {motivationalData.notes[currentNote]}
                     </p>
                 </div>
@@ -131,17 +131,17 @@ export default function Countdown() {
                         <span className="text-xl">
                             <Image src="/coin.png" alt="Coin" width={24} height={24} className="w-6 h-6 md:w-8 md:h-8" />
                         </span>
-                        <span className="font-kaushan text-lg md:text-xl text-[#8A3D58]">{coinBalance} coins</span>
+                        <span className="font-semibold text-lg md:text-xl text-[#8A3D58]">{coinBalance} coins</span>
                     </div>
                     <button
                         onClick={() => setShopOpen(true)}
-                        className="bg-[#8A3D58] text-white font-kaushan text-lg md:text-xl px-6 py-2 rounded-full shadow-md hover:bg-[#6d2f45] hover:scale-105 active:scale-95 transition-all"
+                        className="bg-[#8A3D58] text-white font-semibold text-lg md:text-xl px-6 py-2 rounded-full shadow-md hover:bg-[#6d2f45] hover:scale-105 active:scale-95 transition-all"
                     >
                         Shop
                     </button>
                     <button
                         onClick={() => setHowToEarnOpen(true)}
-                        className="bg-white/80 backdrop-blur-sm text-[#8A3D58] border-2 border-[#8A3D58] font-kaushan text-lg md:text-xl px-6 py-2 rounded-full shadow-md hover:bg-[#f9e8ef] hover:scale-105 active:scale-95 transition-all"
+                        className="bg-white/80 backdrop-blur-sm text-[#8A3D58] border-2 border-[#8A3D58] font-semibold text-lg md:text-xl px-6 py-2 rounded-full shadow-md hover:bg-[#f9e8ef] hover:scale-105 active:scale-95 transition-all"
                     >
                         How to Earn
                     </button>
@@ -167,8 +167,8 @@ export default function Countdown() {
                         { value: timeLeft.seconds, label: 'Seconds' },
                     ].map((t, i) => (
                         <div key={t.label} className={`animate-count-fade stagger-${i + 1} flex flex-col items-center`}>
-                            <span className="font-kaushan text-5xl md:text-7xl lg:text-9xl text-white">{t.value}</span>
-                            <span className="font-kaushan text-xl md:text-2xl lg:text-4xl text-white">{t.label}</span>
+                            <span className="font-bold text-5xl md:text-7xl lg:text-9xl text-white tabular-nums">{t.value}</span>
+                            <span className="font-semibold text-xl md:text-2xl lg:text-4xl text-white">{t.label}</span>
                         </div>
                     ))}
                 </div>
@@ -187,7 +187,7 @@ export default function Countdown() {
                             <h3 className="font-kaushan text-2xl md:text-3xl text-[#8A3D58]">Shop</h3>
                             <div className="flex items-center gap-2 bg-[#f9e8ef] rounded-full px-3 py-1">
                                 <Image src="/coin.png" alt="Coin" width={20} height={20} className="w-5 h-5 md:w-6 md:h-6" />
-                                <span className="font-kaushan text-base text-[#8A3D58]">{coinBalance}</span>
+                                <span className="font-semibold text-base text-[#8A3D58]">{coinBalance}</span>
                             </div>
                         </div>
 
@@ -275,7 +275,7 @@ export default function Countdown() {
                         className="animate-scale-in relative bg-white rounded-2xl shadow-2xl w-full max-w-xs p-6 flex flex-col items-center gap-4"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h4 className="font-kaushan text-xl md:text-2xl text-[#8A3D58]">Confirm Purchase</h4>
+                        <h4 className="font-semibold text-xl md:text-2xl text-[#8A3D58]">Confirm Purchase</h4>
 
                         <p className="text-gray-700 text-sm md:text-base text-center">
                             Buy <span className="font-bold">{confirmItem.name}</span>?

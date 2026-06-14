@@ -1,8 +1,8 @@
-export const API_BASE = 'https://blunchqt-1.onrender.com';
-export const WS_BASE = 'wss://blunchqt-1.onrender.com';
+// export const API_BASE = 'https://blunchqt-1.onrender.com';
+// export const WS_BASE = 'wss://blunchqt-1.onrender.com';
 
-// export const API_BASE = 'http://localhost:8000';
-// export const WS_BASE = 'ws://localhost:8000';
+export const API_BASE = 'http://localhost:8000';
+export const WS_BASE = 'ws://localhost:8000';
 
 // ── Types ──────────────────────────────────────────────
 
@@ -55,7 +55,7 @@ export interface SubjectProgress {
 export type ProgressData = Record<string, SubjectProgress>;
 
 export interface WSMessage<T = unknown> {
-  type: 'initial' | 'update' | 'insert' | 'pong';
+  type: 'initial' | 'update' | 'insert' | 'delete' | 'pong';
   data?: T;
   id?: number;
   field?: string;
@@ -143,6 +143,10 @@ export function addScore(payload: {
   total: number;
 }) {
   return post('/add_score', payload);
+}
+
+export function deleteScore(table: string, id: number) {
+  return post('/delete_score', { table, id });
 }
 
 // ── Progress ──────────────────────────────────────────

@@ -80,6 +80,10 @@ class NewScore(BaseModel):
     mistakes: int
     total: int
 
+class DeleteScore(BaseModel):
+    table: str
+    id: int
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: websockets.WebSocket):
     await websocket.accept()
@@ -111,22 +115,22 @@ async def get_topics():
 
 @app.get("/abnormal_psychology_score")
 async def get_abnormal_scores():
-    response = supabase.table("abnormal_psychology_score").select("*").execute()   
+    response = supabase.table("abnormal_psychology_score").select("*").order("drill_date", desc=False).execute()   
     return response.data
 
 @app.get("/developmental_psychology_score")
 async def get_developmental_scores():
-    response = supabase.table("developmental_psychology_score").select("*").execute()   
+    response = supabase.table("developmental_psychology_score").select("*").order("drill_date", desc=False).execute()   
     return response.data
 
 @app.get("/psychological_assessment_score")
 async def get_assessment_scores():
-    response = supabase.table("psychological_assessment_score").select("*").execute()   
+    response = supabase.table("psychological_assessment_score").select("*").order("drill_date", desc=False).execute()   
     return response.data
 
 @app.get("/industrial_organizational_psychology_score")
 async def get_industrial_scores():
-    response = supabase.table("industrial_organizational_psychology_score").select("*").execute()   
+    response = supabase.table("industrial_organizational_psychology_score").select("*").order("drill_date", desc=False).execute()   
     return response.data
 
 @app.post("/update_topic")
@@ -218,6 +222,30 @@ async def update_score(update: ScoreUpdate):
     except Exception as e:
         return {"error": str(e)}
 
+@app.post("/delete_score")
+async def delete_score(req: DeleteScore):
+    try:
+        ALLOWED_TABLES = {
+            "abnormal_psychology_score",
+            "developmental_psychology_score",
+            "psychological_assessment_score",
+            "industrial_organizational_psychology_score",
+        }
+        if req.table not in ALLOWED_TABLES:
+            return {"error": "Invalid table name"}
+
+        supabase.table(req.table).delete().eq("id", req.id).execute()
+
+        await manager.broadcast({
+            "type": "delete",
+            "table": req.table,
+            "id": req.id,
+        }, req.table)
+
+        return {"message": "Score deleted successfully", "id": req.id}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.post("/add_score")
 async def add_score(new_score: NewScore):
     try:
@@ -267,12 +295,12 @@ async def websocket_scores(websocket: WebSocket, table_name: str):
     await manager.connect(websocket, table_name)
     try:
         # Send initial data
-        response = supabase.table(table_name).select("*").execute()
+        response = supabase.table(table_name).select("*").order("drill_date", desc=False).execute()
         await websocket.send_json({
             "type": "initial",
             "data": response.data
         })
-        
+
         # Keep connection alive and listen for messages
         while True:
             data = await websocket.receive_text()

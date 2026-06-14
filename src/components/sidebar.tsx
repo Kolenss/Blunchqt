@@ -2,31 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-
-interface SubItem {
-  name: string;
-  href: string;
-}
+import { usePathname } from 'next/navigation';
 
 interface MenuItem {
   name: string;
   href: string;
-  active?: boolean;
-  subItems?: SubItem[];
 }
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
-    { name: 'Summary', href: '/', active: true },
+    { name: 'Summary', href: '/' },
     { name: 'Tracker', href: '/tracker' },
     { name: 'TOS Summary', href: '/tos' },
     { name: 'Score Tracker', href: '/scores' },
     { name: 'DSM-5', href: '/dsm5' },
-    { name: 'Learning Materials', href: '/materials' },
-    { name: 'Study Strategy', href: '/strategies' },
     { name: 'PRC Requirements', href: '/prc' },
   ];
 
@@ -83,7 +75,7 @@ export default function Sidebar() {
                 key={item.name}
                 href={item.href}
                 className={`block px-4 py-3 rounded-lg transition-colors ${
-                  item.active
+                  pathname === item.href
                     ? 'bg-[#8A3D58] text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
