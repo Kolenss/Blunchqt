@@ -54,15 +54,7 @@ export default function ScoresPage() {
   const config = subjects[selectedSubject];
 
   return (
-    <div 
-      className="flex flex-col items-center bg-zinc-50 font-sans min-h-screen p-4 md:p-8"
-      style={{ 
-        backgroundImage: "url(/smbg2.png)",
-        backgroundSize: "contain",
-        backgroundPosition: 'center',
-        backgroundRepeat: "repeat"
-      }}
-    >
+    <div className="bg-ruled flex flex-col items-center font-sans min-h-screen p-4 md:p-8">
       <div className="w-full">
         <h1 className="font-kaushan text-4xl md:text-5xl lg:text-6xl text-black mb-6 md:mb-8 text-center">Summary Score Tracker</h1>
 

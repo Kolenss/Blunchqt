@@ -10,7 +10,6 @@ import {
 } from '@/lib/api';
 import { earnCoin } from '@/lib/coins';
 import { useWS } from '@/lib/use-ws';
-import TableSkeleton from '@/components/table-skeleton';
 
 interface ScoreTableProps {
   title: string;
@@ -27,7 +26,7 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2,
     drill_date: '',
     score: '',
     mistakes: '',
-    total: ''
+    total: '',
   });
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -41,20 +40,20 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2,
     fallbackFetch,
   });
 
+  const accent = color1 || '#fbbc04';
+  const accentSoft = color3 || '#fff9e6';
+
   const handleFieldChange = async (id: number, field: string, value: string | number) => {
     try {
       const { ok } = await updateScoreAPI({ id, table: tableName, field, value });
-
       if (!ok) throw new Error('Failed to update score');
 
       setScores(prev => prev.map(s => {
         if (s.id === id) {
           const updatedScore = { ...s, [field]: (field === 'drill_date' || field === 'drill') ? value : Number(value) };
-
           if (field === 'score' || field === 'mistakes' || field === 'total') {
             updateScoreAPI({ id, table: tableName, field: 'average', value: '' });
           }
-
           return updatedScore;
         }
         return s;
@@ -84,7 +83,6 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2,
         throw new Error((data as { error?: string }).error || 'Failed to add score');
       }
 
-      // Award coins based on average: 5 points * (score/total)
       if (total > 0 && data) {
         const average = score / total;
         const points = Math.round(5 * average);
@@ -119,190 +117,145 @@ export default function ScoreTable({ title, endpoint, tableName, color1, color2,
     }
   };
 
+  const inputCls = 'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-2 text-sm';
+
   return (
-    <div className="flex flex-col items-center font-sans min-h-screen p-2 md:p-8 overflow-x-hidden">
-      <div className="w-full max-w-6xl">
+    <div className="flex flex-col items-center font-sans p-2 md:p-4" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+      <div className="w-full max-w-3xl">
+
+        {/* Header */}
+        <div className="flex items-end justify-between mb-4 px-1">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.12em] underline" style={{ color: accent }}>
+              Score Tracker
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold mt-0.5" style={{ fontFamily: 'var(--font-playfair), serif', color: '#201923' }}>
+              {title}
+            </h1>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className="text-2xl md:text-3xl font-extrabold" style={{ fontFamily: 'var(--font-playfair), serif', color: '#934652' }}>
+              {scores.length}
+            </div>
+            <div className="text-[11px]" style={{ color: '#867274' }}>drills logged</div>
+          </div>
+        </div>
 
         {loading && scores.length === 0 ? (
-          <TableSkeleton
-            title={title}
-            headers={['Drills', 'Date', 'Score', 'Mistakes', 'Total', 'Average', '']}
-            color1={color1}
-            color2={color2}
-            color3={color3}
-          />
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-[88px] rounded-[12px] animate-pulse border" style={{ backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#ecdeed' }} />
+            ))}
+          </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
-            <table className="w-full min-w-[520px]">
-              <thead>
-                <tr style={{ backgroundColor: color1 || '#fbbc04' }}>
-                  <th colSpan={7} className="px-4 md:px-6 py-3 md:py-4 text-center font-bold text-gray-800 text-lg md:text-xl">
-                    {title}
-                  </th>
-                </tr>
-                <tr style={{ backgroundColor: color2 || '#fff2cc' }}>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-left font-semibold text-gray-800 text-sm md:text-base">Drills</th>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Date</th>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Score</th>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Mistakes</th>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Total</th>
-                  <th className="px-4 md:px-6 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base">Average</th>
-                  <th className="px-2 py-3 md:py-4 text-center font-semibold text-gray-800 text-sm md:text-base w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {scores.map((score, index) => (
-                  <tr
-                    key={score.id}
-                    className="border-b hover:brightness-95 transition-colors"
-                    style={{ backgroundColor: index % 2 === 0 ? (color3 || '#f9fafb') : 'white' }}
-                  >
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-gray-800 text-sm md:text-base">
-                      <input
-                        type="text"
-                        value={score.drill}
-                        onChange={(e) => handleFieldChange(score.id, 'drill', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-sm"
-                      />
-                    </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-center text-gray-600 text-sm md:text-base">
+          <div className="flex flex-col gap-3">
+            {scores.map(score => {
+              const avg = typeof score.average === 'number' ? score.average : Number(score.average);
+              return (
+                <div
+                  key={score.id}
+                  className="rounded-[12px] px-4 py-3 border"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderColor: '#ecdeed', boxShadow: '0 1px 4px rgba(138,61,88,0.06)' }}
+                >
+                  {/* Top: drill name + delete */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={score.drill}
+                      onChange={(e) => handleFieldChange(score.id, 'drill', e.target.value)}
+                      className="flex-1 text-base font-bold bg-transparent border-0 border-b focus:outline-none focus:border-b-2 px-1 py-0.5"
+                      style={{ color: '#201923', borderColor: '#ecdeed' }}
+                    />
+                    {deletingId === score.id ? (
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => handleDeleteRow(score.id)} className="p-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/25 transition-all" title="Confirm delete">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        </button>
+                        <button onClick={() => setDeletingId(null)} className="p-1.5 rounded-full bg-gray-500/10 text-gray-500 hover:bg-gray-500/25 transition-all" title="Cancel">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setDeletingId(score.id)} className="p-1.5 rounded-full opacity-40 hover:opacity-100 hover:bg-red-500/10 text-gray-600 hover:text-red-600 transition-all" title="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></svg>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Stats grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#867274' }}>
+                      Date
                       <input
                         type="date"
                         value={score.drill_date ? new Date(score.drill_date).toISOString().split('T')[0] : ''}
                         onChange={(e) => handleFieldChange(score.id, 'drill_date', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-center text-sm"
+                        className={`${inputCls} mt-1 font-normal normal-case`}
+                        style={{ borderColor: '#d9c1c2', color: '#534344' }}
                       />
-                    </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-center text-gray-800 font-semibold text-sm md:text-base">
+                    </label>
+                    <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#867274' }}>
+                      Score
                       <input
                         type="number"
                         value={score.score}
                         onChange={(e) => handleFieldChange(score.id, 'score', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-center text-sm font-semibold"
+                        className={`${inputCls} mt-1 text-center font-semibold`}
+                        style={{ borderColor: '#d9c1c2', color: '#201923' }}
                       />
-                    </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-center text-red-600 font-semibold text-sm md:text-base">
+                    </label>
+                    <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#867274' }}>
+                      Mistakes
                       <input
                         type="number"
                         value={score.mistakes}
                         onChange={(e) => handleFieldChange(score.id, 'mistakes', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-center text-sm font-semibold text-red-600"
+                        className={`${inputCls} mt-1 text-center font-semibold text-red-600`}
+                        style={{ borderColor: '#d9c1c2' }}
                       />
-                    </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-center text-gray-800 font-semibold text-sm md:text-base">
+                    </label>
+                    <label className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#867274' }}>
+                      Total
                       <input
                         type="number"
                         value={score.total}
                         onChange={(e) => handleFieldChange(score.id, 'total', e.target.value)}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-center text-sm font-semibold"
+                        className={`${inputCls} mt-1 text-center font-semibold`}
+                        style={{ borderColor: '#d9c1c2', color: '#201923' }}
                       />
-                    </td>
-                    <td className="px-4 md:px-6 py-3 md:py-4 text-center text-green-600 font-semibold text-sm md:text-base">
-                      {typeof score.average === 'number' ? score.average.toFixed(2) : Number(score.average).toFixed(2)}%
-                    </td>
-                    <td className="px-1 md:px-2 py-3 md:py-4 text-center relative">
-                      <div className="flex items-center justify-center gap-1">
-                        {deletingId === score.id ? (
-                          <div className="flex items-center gap-1 animate-in fade-in">
-                            <button
-                              onClick={() => handleDeleteRow(score.id)}
-                              className="p-1.5 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/25 transition-all duration-200"
-                              title="Confirm delete"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => setDeletingId(null)}
-                              className="p-1.5 rounded-full bg-gray-500/10 text-gray-500 hover:bg-gray-500/25 transition-all duration-200"
-                              title="Cancel"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                              </svg>
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setDeletingId(score.id)}
-                            className="p-1.5 rounded-full opacity-40 hover:opacity-100 hover:bg-red-500/10 text-gray-600 hover:text-red-600 transition-all duration-200"
-                            title="Delete row"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M3 6h18" />
-                              <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                              <path d="M10 11v6" />
-                              <path d="M14 11v6" />
-                            </svg>
-                          </button>
-                        )}
+                    </label>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#867274' }}>
+                      Average
+                      <div className="mt-1 px-2 py-1 rounded-md text-center font-bold text-sm" style={{ backgroundColor: '#dce5ab', color: '#3f5417' }}>
+                        {Number.isFinite(avg) ? avg.toFixed(2) : '0.00'}%
                       </div>
-                    </td>
-                  </tr>
-                ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
-                {/* New Row for Adding Data */}
-                <tr className=" border-t-2">
-                  <td className="px-4 md:px-6 py-3 md:py-4">
-                    <input
-                      type="text"
-                      placeholder="Enter drill name"
-                      value={newRow.drill}
-                      onChange={(e) => setNewRow({ ...newRow, drill: e.target.value })}
-                      className="text-black w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    />
-                  </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                    <input
-                      type="date"
-                      value={newRow.drill_date}
-                      onChange={(e) => setNewRow({ ...newRow, drill_date: e.target.value })}
-                      className="text-black w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-sm"
-                    />
-                  </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                    <input
-                      type="number"
-                      placeholder="Score"
-                      value={newRow.score}
-                      onChange={(e) => setNewRow({ ...newRow, score: e.target.value })}
-                      className="text-black w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-sm"
-                    />
-                  </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                    <input
-                      type="number"
-                      placeholder="Mistakes"
-                      value={newRow.mistakes}
-                      onChange={(e) => setNewRow({ ...newRow, mistakes: e.target.value })}
-                      className="text-black w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-sm"
-                    />
-                  </td>
-                  <td className="px-4 md:px-6 py-3 md:py-4 text-center">
-                    <input
-                      type="number"
-                      placeholder="Total"
-                      value={newRow.total}
-                      onChange={(e) => setNewRow({ ...newRow, total: e.target.value })}
-                      className="text-black w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-sm"
-                    />
-                  </td>
-                  <td colSpan={2} className="px-4 md:px-6 py-3 md:py-4 text-center">
-                    <button
-                      onClick={handleAddRow}
-                      className="px-4 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-semibold"
-                    >
-                      Add
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {/* Add new drill card */}
+            <div className="rounded-[12px] px-4 py-3 border-2 border-dashed" style={{ backgroundColor: accentSoft, borderColor: accent }}>
+              <p className="text-sm font-bold mb-3" style={{ color: '#201923' }}>Add a drill</p>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
+                <input type="text" placeholder="Drill name" value={newRow.drill} onChange={(e) => setNewRow({ ...newRow, drill: e.target.value })} className={`${inputCls} col-span-2 sm:col-span-1`} style={{ borderColor: '#d9c1c2', color: '#201923' }} />
+                <input type="date" value={newRow.drill_date} onChange={(e) => setNewRow({ ...newRow, drill_date: e.target.value })} className={inputCls} style={{ borderColor: '#d9c1c2', color: '#534344' }} />
+                <input type="number" placeholder="Score" value={newRow.score} onChange={(e) => setNewRow({ ...newRow, score: e.target.value })} className={`${inputCls} text-center`} style={{ borderColor: '#d9c1c2', color: '#201923' }} />
+                <input type="number" placeholder="Mistakes" value={newRow.mistakes} onChange={(e) => setNewRow({ ...newRow, mistakes: e.target.value })} className={`${inputCls} text-center`} style={{ borderColor: '#d9c1c2', color: '#201923' }} />
+                <input type="number" placeholder="Total" value={newRow.total} onChange={(e) => setNewRow({ ...newRow, total: e.target.value })} className={`${inputCls} text-center`} style={{ borderColor: '#d9c1c2', color: '#201923' }} />
+              </div>
+              <button
+                onClick={handleAddRow}
+                className="w-full sm:w-auto px-6 py-2 text-white rounded-full text-sm font-bold transition-all hover:bg-[#76353f] active:scale-95"
+                style={{ backgroundColor: '#934652' }}
+              >
+                Add Drill
+              </button>
+            </div>
 
             {scores.length === 0 && (
-              <p className="text-center py-8 text-gray-500">No scores found</p>
+              <p className="text-center py-4 text-gray-500">No scores yet — add your first drill above.</p>
             )}
           </div>
         )}

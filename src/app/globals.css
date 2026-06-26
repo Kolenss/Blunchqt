@@ -11,12 +11,27 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-kaushan: var(--font-kaushan);
+  --font-playfair: var(--font-playfair);
+  --font-jakarta: var(--font-jakarta);
+  --font-dm-sans: var(--font-dm-sans);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Faint ruled-paper background (notebook lines) */
+.bg-ruled {
+  background-color: #fffafd;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    rgba(217, 193, 194, 0.45) 31px,
+    rgba(217, 193, 194, 0.45) 32px
+  );
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

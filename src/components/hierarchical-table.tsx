@@ -9,7 +9,6 @@ import {
   updateTOSComment,
 } from '@/lib/api';
 import { useWS } from '@/lib/use-ws';
-import TableSkeleton from '@/components/table-skeleton';
 
 function formatTopicLabel(topic: TOSTopic) {
   const topicText = topic.topic.trim();
@@ -40,6 +39,12 @@ interface GroupedTopics {
   };
 }
 
+const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+  done: { bg: '#dce5ab', text: '#434a1f', dot: '#5a6235', label: 'Done' },
+  inprogress: { bg: '#fff2cc', text: '#7a5c00', dot: '#d4a017', label: 'In Progress' },
+  undone: { bg: '#ecdeed', text: '#534344', dot: '#b6a3b7', label: 'Undone' },
+};
+
 export default function HierarchicalTable({
   subject,
   weight = '20%',
@@ -58,6 +63,9 @@ export default function HierarchicalTable({
     path: `/ws/topics/${encodeURIComponent(subject)}`,
     fallbackFetch,
   });
+
+  const accent = color1 || '#a4c2f4';
+  const accentSoft = color3 || '#e8f1fc';
 
   const handleStatusChange = async (id: number, newStatus: 'undone' | 'inprogress' | 'done') => {
     try {
@@ -113,22 +121,22 @@ export default function HierarchicalTable({
     return grouped;
   };
 
+  const doneCount = topics.filter(t => t.status === 'done').length;
+  const pct = topics.length > 0 ? (doneCount / topics.length) * 100 : 0;
+
   if (loading && topics.length === 0) {
     return (
-      <TableSkeleton
-        title={subject.toUpperCase()}
-        headers={['Main Topic', 'Status', 'Comments']}
-        rows={10}
-        color1={color1}
-        color2={color2}
-        color3={color3}
-      />
+      <div className="w-full max-w-3xl mx-auto flex flex-col gap-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-[60px] rounded-[10px] animate-pulse border" style={{ backgroundColor: 'rgba(255,255,255,0.6)', borderColor: '#ecdeed' }} />
+        ))}
+      </div>
     );
   }
 
   if (topics.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
+      <div className="bg-white/90 rounded-xl shadow-md p-8 text-center w-full max-w-3xl mx-auto">
         <p className="text-gray-600">No topics found</p>
       </div>
     );
@@ -137,92 +145,91 @@ export default function HierarchicalTable({
   const groupedTopics = groupTopics();
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden overflow-x-auto">
-      <table className="w-full border-collapse min-w-[480px]">
-        <thead>
-          <tr style={{ backgroundColor: color1 }} className="border border-white">
-            <th colSpan={3} className="px-3 md:px-6 py-3 md:py-4 text-center font-bold text-gray-800 text-base md:text-xl border border-white">
-              {subject.toUpperCase()}
-            </th>
-          </tr>
-          <tr style={{ backgroundColor: color2 }} className="border border-white">
-            <th className="px-2 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-xs md:text-base border border-white">
-              Weight: {weight}
-            </th>
-            <th className="px-2 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-xs md:text-base border border-white">
-              {totalItems}
-            </th>
-            <th className="px-2 md:px-6 py-2 md:py-3 text-center font-semibold text-gray-800 text-xs md:text-base border border-white">
-              {duration}
-            </th>
-          </tr>
-          <tr style={{ backgroundColor: color2 }} className="border border-white">
-            <th className="px-2 md:px-6 py-2 md:py-4 text-center font-semibold text-gray-800 text-xs md:text-base border border-white">Topics</th>
-            <th className="px-2 md:px-6 py-2 md:py-4 text-center font-semibold text-gray-800 text-xs md:text-base border border-white w-28 md:w-auto">Progress</th>
-            <th className="px-2 md:px-6 py-2 md:py-4 text-center font-semibold text-gray-800 text-xs md:text-base border border-white">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(groupedTopics).map(([mainTopic, subTopics]) => (
-            <React.Fragment key={mainTopic}>
-              <tr style={{ backgroundColor: color1 }} className="border border-white">
-                <td colSpan={3} className="px-2 md:px-6 py-2 md:py-4 font-bold text-gray-800 text-xs md:text-base border border-white">
-                  {mainTopic}
-                </td>
-              </tr>
+    <div className="w-full max-w-3xl mx-auto" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+      {/* Header */}
+      <div className="flex items-end justify-between mb-3 px-1">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] underline" style={{ color: accent }}>
+            TOS Summary
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold mt-0.5" style={{ fontFamily: 'var(--font-playfair), serif', color: '#201923' }}>
+            {subject}
+          </h1>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <div className="text-2xl md:text-3xl font-extrabold" style={{ fontFamily: 'var(--font-playfair), serif', color: '#934652' }}>
+            {pct.toFixed(0)}%
+          </div>
+          <div className="text-[11px]" style={{ color: '#867274' }}>{doneCount} of {topics.length} done</div>
+        </div>
+      </div>
 
-              {Object.entries(subTopics).map(([subTopic, topicList]) => (
-                <React.Fragment key={`${mainTopic}-${subTopic}`}>
-                  {subTopic !== 'General' && (
-                    <tr style={{ backgroundColor: color2 }} className="border border-white">
-                      <td colSpan={3} className="px-2 md:px-6 py-2 md:py-3 font-semibold text-gray-700 text-xs md:text-base border border-white">
-                        {subTopic}
-                      </td>
-                    </tr>
-                  )}
+      {/* Meta chips: weight / items / duration */}
+      <div className="flex flex-wrap gap-2 mb-4 px-1">
+        {[`Weight: ${weight}`, totalItems, duration].map(meta => (
+          <span key={meta} className="text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: color2 || '#cfe2f3', color: '#1a1a2e' }}>
+            {meta}
+          </span>
+        ))}
+      </div>
 
-                  {topicList.map((topic, index) => (
-                    <tr
+      {/* Grouped topic cards */}
+      <div className="flex flex-col gap-5">
+        {Object.entries(groupedTopics).map(([mainTopic, subTopics]) => (
+          <div key={mainTopic} className="flex flex-col gap-2">
+            {/* Main topic heading */}
+            <div className="flex items-center gap-2 px-1">
+              <span className="w-1.5 h-5 rounded-full" style={{ backgroundColor: accent }} />
+              <h2 className="text-base md:text-lg font-bold" style={{ color: '#201923' }}>{mainTopic}</h2>
+            </div>
+
+            {Object.entries(subTopics).map(([subTopic, topicList]) => (
+              <React.Fragment key={`${mainTopic}-${subTopic}`}>
+                {subTopic !== 'General' && (
+                  <div className="text-xs font-semibold uppercase tracking-wide px-1 pt-1" style={{ color: '#867274' }}>
+                    {subTopic}
+                  </div>
+                )}
+
+                {topicList.map(topic => {
+                  const st = STATUS_STYLES[topic.status] || STATUS_STYLES.undone;
+                  return (
+                    <div
                       key={topic.id}
-                      className="hover:brightness-95 transition-colors border border-white"
-                      style={{ backgroundColor: index % 2 === 0 ? 'white' : (color3 || '#f9fafb') }}
+                      className="rounded-[10px] px-4 py-3 border flex flex-col gap-2.5"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.9)', borderColor: '#ecdeed', boxShadow: '0 1px 4px rgba(138,61,88,0.06)' }}
                     >
-                      <td className="px-2 md:px-6 py-2 md:py-3 text-gray-800 text-xs md:text-base border border-white">
-                        {formatTopicLabel(topic)}
-                      </td>
-                      <td className="px-2 md:px-6 py-2 md:py-3 text-center border border-white">
+                      <div className="flex items-start gap-3">
+                        <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: st.dot }} />
+                        <p className="flex-1 text-sm font-medium" style={{ color: '#201923' }}>{formatTopicLabel(topic)}</p>
                         <select
                           value={topic.status}
                           onChange={(e) => handleStatusChange(topic.id, e.target.value as 'undone' | 'inprogress' | 'done')}
-                          className={`w-full px-1 md:px-3 py-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-xs md:text-base ${
-                            topic.status === 'done' ? 'bg-green-100 text-green-800' :
-                            topic.status === 'inprogress' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}
+                          className="text-xs font-semibold px-2 py-1 rounded-full border-0 focus:outline-none focus:ring-2 cursor-pointer flex-shrink-0"
+                          style={{ backgroundColor: st.bg, color: st.text }}
                         >
                           <option value="undone">Undone</option>
                           <option value="inprogress">In Progress</option>
                           <option value="done">Done</option>
                         </select>
-                      </td>
-                      <td className="px-2 md:px-6 py-2 md:py-3 border border-white">
-                        <input
-                          type="text"
-                          placeholder="Add notes..."
-                          value={topic.comment || ''}
-                          onChange={(e) => handleCommentChange(topic.id, e.target.value)}
-                          onBlur={(e) => handleCommentChange(topic.id, e.target.value)}
-                          className="w-full px-1 md:px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8A3D58] text-xs md:text-base"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Add notes..."
+                        value={topic.comment || ''}
+                        onChange={(e) => handleCommentChange(topic.id, e.target.value)}
+                        onBlur={(e) => handleCommentChange(topic.id, e.target.value)}
+                        className="w-full text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2"
+                        style={{ backgroundColor: accentSoft, color: '#201923' }}
+                      />
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
