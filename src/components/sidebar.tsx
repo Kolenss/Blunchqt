@@ -27,7 +27,7 @@ export default function Sidebar() {
       {/* Hamburger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 p-2 bg-[#8A3D58] text-white rounded-md hover:bg-[#6d2f45] transition-colors"
+        className="fixed top-4 left-4 z-50 p-2 bg-[#934652] text-white rounded-md hover:bg-[#76353f] transition-colors"
         aria-label="Toggle menu"
       >
         <svg
@@ -76,7 +76,7 @@ export default function Sidebar() {
                 href={item.href}
                 className={`block px-4 py-3 rounded-lg transition-colors ${
                   pathname === item.href
-                    ? 'bg-[#8A3D58] text-white'
+                    ? 'bg-[#934652] text-white'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
                 onClick={() => setIsOpen(false)}
